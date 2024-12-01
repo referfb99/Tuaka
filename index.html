@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paystack Payment Integration</title>
+</head>
+<body>
+    <h1>Pay with Paystack</h1>
+    <button id="payButton">Pay Now</button>
+
+    <p>
+        Virtual Account Number: <span id="accountNumber">0123456789</span>
+        <button id="copyButton">Copy Account Number</button>
+    </p>
+
+    <!-- Paystack JavaScript SDK -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+
+    <script>
+        // Function to initialize Paystack payment
+        function payWithPaystack() {
+            const handler = PaystackPop.setup({
+                key: 'pk_live_e74ee0a06c35fb9ffad2e0712922f06ba846a93b', // Replace with your Paystack public key
+                email: 'customer@example.com', // Customer's email
+                amount: 500000, // Amount in kobo (e.g., 5000 NGN = 500000 kobo)
+                currency: 'NGN', // Currency
+                ref: `REF-${Math.floor(Math.random() * 1000000000 + 1)}`, // Unique transaction reference
+                
+                callback: function (response) {
+                    // Handle successful payment
+                    alert(`Transaction successful! Reference: ${response.reference}`);
+                },
+                onClose: function () {
+                    alert('Payment window closed.');
+                }
+            });
+
+            // Open the Paystack payment modal
+            handler.openIframe();
+        }
+
+        // Attach the payment function to the button click
+        document.getElementById('payButton').addEventListener('click', payWithPaystack);
+
+        // Function to copy text to clipboard with fallback
+        function copyToClipboardFallback(text) {
+            // Fallback method using a temporary textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('Account number copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy text.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Use Clipboard API if available, otherwise fallback
+        function copyAccountNumber() {
+            const accountNumber = document.getElementById('accountNumber').innerText;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(accountNumber).then(() => {
+                    alert('Account number copied to clipboard!');
+                }).catch(err => {
+                    console.error('Clipboard API failed:', err);
+                    copyToClipboardFallback(accountNumber);
+                });
+            } else {
+                copyToClipboardFallback(accountNumber);
+            }
+        }
+
+        // Attach the copy function to the button click
+        document.getElementById('copyButton').addEventListener('click', copyAccountNumber);
+    </script>
+</body>
+</html>
